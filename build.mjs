@@ -1,6 +1,6 @@
 // Compila a extensão Atalhos Arcanjo em dist/chrome (Chrome, Edge, Brave, Opera) e dist/firefox a partir de src/,
-// e gera pacotes .zip prontos para download na raiz e no servidor web local.
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+// gera index.html para hospedagem web (Vercel / Netlify) e pacotes .zip prontos para download.
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 
 const base = JSON.parse(readFileSync("manifest.base.json", "utf8"));
@@ -24,17 +24,25 @@ for (const [name, manifest] of Object.entries(targets)) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
   cpSync("src", out, { recursive: true });
+  // Cria também index.html espelhando options.html para funcionar direto na raiz na Vercel
+  cpSync("src/options.html", `${out}/index.html`);
   writeFileSync(`${out}/manifest.json`, JSON.stringify(manifest, null, 2) + "\n");
   console.log(`Compilado com sucesso: ${out}`);
 }
 
-// Gera os arquivos .zip na raiz do projeto para facilitar o download
+// Atualiza os arquivos .zip quando PowerShell estiver disponível (Windows)
 try {
   execSync('powershell -NoProfile -Command "Compress-Archive -Path \'dist/chrome/*\' -DestinationPath \'Atalhos-Arcanjo-Chrome-Edge.zip\' -Force"', { stdio: "ignore" });
   execSync('powershell -NoProfile -Command "Compress-Archive -Path \'dist/firefox/*\' -DestinationPath \'Atalhos-Arcanjo-Firefox.zip\' -Force"', { stdio: "ignore" });
-  cpSync("Atalhos-Arcanjo-Chrome-Edge.zip", "dist/chrome/Atalhos-Arcanjo-Chrome-Edge.zip");
-  cpSync("Atalhos-Arcanjo-Firefox.zip", "dist/chrome/Atalhos-Arcanjo-Firefox.zip");
-  console.log("Pacotes ZIP gerados: Atalhos-Arcanjo-Chrome-Edge.zip e Atalhos-Arcanjo-Firefox.zip");
+  console.log("Pacotes ZIP atualizados: Atalhos-Arcanjo-Chrome-Edge.zip e Atalhos-Arcanjo-Firefox.zip");
 } catch {
-  // Em sistemas não-Windows sem PowerShell, mantém dist/chrome e dist/firefox
+  // Em servidores Linux (como Vercel), utiliza os pacotes .zip versionados na raiz
+}
+
+// Copia os pacotes .zip para dentro de dist/chrome para que os links de download funcionem na Vercel
+if (existsSync("Atalhos-Arcanjo-Chrome-Edge.zip")) {
+  cpSync("Atalhos-Arcanjo-Chrome-Edge.zip", "dist/chrome/Atalhos-Arcanjo-Chrome-Edge.zip");
+}
+if (existsSync("Atalhos-Arcanjo-Firefox.zip")) {
+  cpSync("Atalhos-Arcanjo-Firefox.zip", "dist/chrome/Atalhos-Arcanjo-Firefox.zip");
 }
