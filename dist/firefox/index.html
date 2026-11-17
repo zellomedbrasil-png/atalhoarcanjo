@@ -327,15 +327,22 @@
           </div>
 
           <div class="card cfg-card span-2">
-            <div class="card-head"><div class="card-title"><svg class="ic"><use href="#i-refresh"/></svg><h2>Backup e sincronização</h2></div></div>
-            <label class="switch row"><input id="syncOn" type="checkbox" checked><span>Sincronizar atalhos pela conta do navegador (Chrome/Edge)</span></label>
+            <div class="card-head"><div class="card-title"><svg class="ic"><use href="#i-refresh"/></svg><h2>Nuvem, Backup e Sincronização Multi-Computador</h2></div></div>
+            <label class="switch row"><input id="cloudSyncOn" type="checkbox" checked><span>Sincronizar automaticamente na nuvem em qualquer computador (Vercel / Web e Extensão)</span></label>
+            <div class="two">
+              <label class="field"><span>Chave da Nuvem do Consultório (automática)</span><input id="cloudKey" class="mono" type="text" value="arcanjo-zellomed-8f92a1c4-7b3d-4e5f" spellcheck="false"></label>
+              <label class="field"><span>Sincronização imediata</span>
+                <button id="cloudSyncNow" class="btn btn-primary" type="button"><svg class="ic"><use href="#i-refresh"/></svg>Sincronizar com a nuvem agora</button>
+              </label>
+            </div>
+            <label class="switch row"><input id="syncOn" type="checkbox" checked><span>Sincronizar também pela conta do navegador (quando instalado como extensão)</span></label>
             <div class="btn-row">
               <button id="export" class="btn" type="button"><svg class="ic"><use href="#i-download"/></svg>Exportar backup (.json)</button>
               <button id="import" class="btn" type="button">Importar (.json / .csv)</button>
               <button id="restoreMedical" class="btn" type="button"><svg class="ic"><use href="#i-refresh"/></svg>Restaurar pacote médico padrão</button>
               <input id="file" type="file" accept=".json,.csv,application/json,text/csv" hidden>
             </div>
-            <p class="muted small">Restaurar adiciona apenas os atalhos padrão que estiverem faltando. Seus atalhos personalizados não são alterados.</p>
+            <p class="muted small">Com a sincronização na nuvem ativa, qualquer atalho ou assinatura médica que você criar ou editar em um computador já estará disponível automaticamente em qualquer outro computador ao abrir o link da Vercel.</p>
           </div>
         </div>
       </section>

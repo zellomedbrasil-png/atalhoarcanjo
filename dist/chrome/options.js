@@ -41,6 +41,9 @@ const VIEW_TITLES = {
   instalar: "Instalar Extensão no Navegador",
 };
 
+const DEFAULT_CLOUD_KEY = "arcanjo-zellomed-8f92a1c4-7b3d-4e5f";
+const CLOUD_ENDPOINT = "https://textdb.dev/api/data/";
+
 let snippets = [];
 let uses = {};
 let settings = {};
@@ -48,6 +51,8 @@ let patientContext = {};
 let current = null;
 let selectedFolder = "";
 let activeView = "consulta";
+let cloudTimer = 0;
+let cloudBusy = false;
 
 // Expõe dados do paciente para o content.js na mesma página
 globalThis.__arcanjoPatient = () => patientContext;
@@ -115,18 +120,17 @@ async function start() {
   ]);
   snippets = data.snippets ?? [];
   if (!snippets.length && STARTERS.length) {
-    const now = Date.now();
+    // Atalhos padrão recebem carimbo base (1000) para que qualquer edição na nuvem tenha prioridade ao sincronizar em um novo PC
     snippets = STARTERS.map((s, i) => ({
-      id: `s${now}${i}`,
+      id: `starter_${(s.shortcut || String(i)).replace(/[^a-z0-9]/gi, "")}`,
       ...s,
       fav: DEFAULT_FAVS.has(s.shortcut),
       folder: s.folder || "01. Clínica Médica & Alto Fluxo",
-      created: now,
-      edited: now,
+      created: 1000,
+      edited: 1000,
     }));
     await storageLocal.set({ snippets });
   } else if (snippets.length && !snippets.some((s) => s.fav !== undefined)) {
-    // Se veio de versão anterior sem favoritos marcados, marca os favoritos clínicos padrão
     for (const s of snippets) {
       if (DEFAULT_FAVS.has(s.shortcut)) s.fav = true;
     }
@@ -140,6 +144,8 @@ async function start() {
   applyTheme(settings.theme || "auto");
   $("enabled").checked = settings.enabled !== false;
   $("syncOn").checked = settings.sync !== false;
+  if ($("cloudSyncOn")) $("cloudSyncOn").checked = settings.cloudSync !== false;
+  if ($("cloudKey")) $("cloudKey").value = settings.cloudKey || DEFAULT_CLOUD_KEY;
   $("patientEverywhere").checked = !!settings.patientEverywhere;
   $("blocked").value = (settings.blockedSites ?? []).join(", ");
 
@@ -171,6 +177,131 @@ async function start() {
   const first = sorted()[0];
   if (first) pick(first.id, false);
   handleHash();
+  // Sincroniza automaticamente com a nuvem ao abrir em qualquer computador
+  void cloudPull(true);
+}
+
+window.addEventListener("focus", () => { void cloudPull(false); });
+
+function stampOf(s) {
+  return s?.edited ?? s?.created ?? 0;
+}
+
+function mergeWithCloud(localList, localDel, remoteList, remoteDel) {
+  const deleted = { ...(localDel ?? {}) };
+  for (const [k, at] of Object.entries(remoteDel ?? {})) {
+    deleted[k] = Math.max(deleted[k] ?? 0, at);
+  }
+  const byKey = new Map();
+  const keyFor = (s) => (s.shortcut ? `sc:${s.shortcut.trim().toLowerCase()}` : `id:${s.id}`);
+  for (const s of [...(localList ?? []), ...(remoteList ?? [])]) {
+    if (!s) continue;
+    const k = keyFor(s);
+    const prev = byKey.get(k);
+    if (!prev || stampOf(s) > stampOf(prev)) {
+      byKey.set(k, s);
+    }
+  }
+  const merged = [];
+  for (const s of byKey.values()) {
+    const delAt = Math.max(deleted[s.id] ?? 0, s.shortcut ? (deleted[`sc:${s.shortcut.trim().toLowerCase()}`] ?? 0) : 0);
+    if (delAt >= stampOf(s)) continue;
+    merged.push(s);
+  }
+  return { snippets: merged, deleted };
+}
+
+function activeCloudKey() {
+  return (settings.cloudKey || $("cloudKey")?.value || DEFAULT_CLOUD_KEY).trim().replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
+async function cloudPull(pushIfEmpty = false) {
+  if (settings.cloudSync === false || cloudBusy) return false;
+  const key = activeCloudKey();
+  if (!key) return false;
+  cloudBusy = true;
+  try {
+    const res = await fetch(`${CLOUD_ENDPOINT}${key}`, { cache: "no-store" });
+    if (!res.ok) return false;
+    const raw = (await res.text()).trim();
+    if (!raw) {
+      if (pushIfEmpty) { cloudBusy = false; await cloudPush(); }
+      return false;
+    }
+    let remote;
+    try { remote = JSON.parse(raw); } catch { return false; }
+    if (!Array.isArray(remote?.snippets)) return false;
+
+    const { deleted: localDel = {} } = await storageLocal.get("deleted");
+    const merged = mergeWithCloud(snippets, localDel, remote.snippets, remote.deleted);
+    snippets = merged.snippets;
+
+    if (remote.signature && (remote.signatureUpdatedAt ?? 0) > (settings.signatureUpdatedAt ?? 0)) {
+      settings = { ...settings, signature: remote.signature, signatureUpdatedAt: remote.signatureUpdatedAt };
+      loadSignatureForm();
+    }
+
+    saving = true;
+    try {
+      await storageLocal.set({ snippets, deleted: merged.deleted, settings });
+    } finally {
+      saving = false;
+    }
+    drawQuickBars();
+    drawList();
+    if (current && snippets.some((s) => s.id === current)) {
+      pick(current, false);
+    } else if (snippets.length) {
+      pick(sorted()[0].id, false);
+    }
+    $("syncState").classList.remove("bad");
+    $("syncState").textContent = "☁️ Sincronizado na nuvem (todos os PCs)";
+    return true;
+  } catch {
+    return false;
+  } finally {
+    cloudBusy = false;
+  }
+}
+
+async function cloudPush() {
+  if (settings.cloudSync === false) return false;
+  const key = activeCloudKey();
+  if (!key) return false;
+  try {
+    // Primeiro mescla caso outro computador tenha salvo algo recentemente
+    await cloudPull(false);
+    cloudBusy = true;
+    const { deleted = {} } = await storageLocal.get("deleted");
+    const payload = {
+      app: "atalhos-arcanjo",
+      at: Date.now(),
+      snippets,
+      deleted,
+      signature: settings.signature ?? null,
+      signatureUpdatedAt: settings.signatureUpdatedAt ?? 0,
+    };
+    const res = await fetch(`${CLOUD_ENDPOINT}${key}`, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      $("syncState").classList.remove("bad");
+      $("syncState").textContent = "☁️ Salvo na nuvem (todos os PCs)";
+      return true;
+    }
+  } catch { /* offline ou sem rede no momento */ }
+  finally {
+    cloudBusy = false;
+  }
+  return false;
+}
+
+function scheduleCloudPush() {
+  if (settings.cloudSync === false) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(() => { void cloudPush(); }, 900);
 }
 
 if (rawApi?.storage?.onChanged) {
@@ -643,6 +774,7 @@ async function save(extra = {}) {
     saving = false;
   }
   $("saved").textContent = "Salvo";
+  scheduleCloudPush();
 }
 
 for (const id of ["shortcut", "label", "folder", "text"]) $(id).addEventListener("input", edited);
@@ -818,9 +950,12 @@ $("delete").addEventListener("click", async () => {
   }
   const order = sorted();
   const i = order.findIndex((x) => x.id === current);
+  const targetSnip = snippets.find((x) => x.id === current);
   snippets = snippets.filter((x) => x.id !== current);
   const { deleted = {} } = await storageLocal.get("deleted");
-  deleted[current] = Date.now();
+  const delTime = Date.now();
+  deleted[current] = delTime;
+  if (targetSnip?.shortcut) deleted[`sc:${targetSnip.shortcut.trim().toLowerCase()}`] = delTime;
   await save({ deleted });
   drawQuickBars();
   const next = order.filter((x) => x.id !== current)[Math.min(i, order.length - 2)];
@@ -878,8 +1013,8 @@ for (const id of ["sigNome", "sigEsp", "sigCrm", "sigRqe", "sigExtra"]) {
 $("saveSig").addEventListener("click", async () => {
   const sig = readSigInputs();
   const text = buildSignatureText(sig);
-  settings = { ...settings, signature: sig };
   const now = Date.now();
+  settings = { ...settings, signature: sig, signatureUpdatedAt: now };
   let s = snippets.find((x) => x.shortcut === "/assinatura");
   if (s) {
     s.text = text;
@@ -899,13 +1034,21 @@ $("saveSig").addEventListener("click", async () => {
     snippets.push(s);
   }
   await storageLocal.set({ settings, snippets });
+  scheduleCloudPush();
   if (current === s.id) pick(s.id, false);
   drawList();
-  toast("Assinatura médica salva e atualizada em /assinatura");
+  toast("Assinatura médica salva e sincronizada na nuvem");
 });
 
 $("enabled").addEventListener("change", saveSettings);
 $("syncOn").addEventListener("change", saveSettings);
+$("cloudSyncOn")?.addEventListener("change", saveSettings);
+$("cloudKey")?.addEventListener("change", saveSettings);
+$("cloudSyncNow")?.addEventListener("click", async () => {
+  toast("Sincronizando com a nuvem…");
+  const ok = await cloudPush();
+  toast(ok ? "Sincronizado com a nuvem em todos os computadores!" : "Não foi possível conectar à nuvem agora.");
+});
 $("patientEverywhere").addEventListener("change", saveSettings);
 $("blocked").addEventListener("change", saveSettings);
 $("themeSelect").addEventListener("change", () => {
@@ -925,12 +1068,15 @@ async function saveSettings() {
     ...settings,
     enabled: $("enabled").checked,
     sync: $("syncOn").checked,
+    cloudSync: $("cloudSyncOn") ? $("cloudSyncOn").checked : true,
+    cloudKey: ($("cloudKey")?.value || DEFAULT_CLOUD_KEY).trim(),
     patientEverywhere: $("patientEverywhere").checked,
     theme: $("themeSelect").value || "auto",
     blockedSites,
   };
   await storageLocal.set({ settings });
-  if (!settings.sync) showSync({ off: true });
+  if (settings.cloudSync) scheduleCloudPush();
+  else if (!settings.sync) showSync({ off: true });
 }
 
 // ---- Backup, Importação e Restauração ----

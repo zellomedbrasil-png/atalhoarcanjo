@@ -87,6 +87,11 @@ const check = (name, got, want) => {
 
 const page = await browser.newPage();
 await page.setViewport({ width: 1440, height: 920 });
+await page.evaluateOnNewDocument(() => {
+  if (!localStorage.getItem("aa_settings")) {
+    localStorage.setItem("aa_settings", JSON.stringify({ cloudKey: "arcanjo-e2e-test-bucket-v3" }));
+  }
+});
 await page.goto(`${baseUrl}/options.html`, { waitUntil: "networkidle0" });
 await sleep(350);
 
@@ -203,6 +208,27 @@ await page.keyboard.press("Enter");
 await sleep(400);
 const [f1Val, f2Val] = await page.evaluate(() => [document.getElementById("f1").value, document.getElementById("f2").value]);
 check("Automação {key: tab} preenche múltiplos campos automaticamente", [f1Val, f2Val], ["Consulta Clínica", "Gastroenterologia / Geriatria"]);
+
+// 8. Testa Sincronização em Nuvem entre Computador 1 e Computador 2
+await page.goto(`${baseUrl}/options.html#config`, { waitUntil: "networkidle0" });
+await sleep(250);
+await page.click("#cloudSyncNow");
+await sleep(1200);
+
+// Simula Computador 2 (contexto anônimo limpo) abrindo o site da Vercel
+const context2 = await browser.createBrowserContext();
+const pc2 = await context2.newPage();
+await pc2.evaluateOnNewDocument(() => {
+  localStorage.setItem("aa_settings", JSON.stringify({ cloudKey: "arcanjo-e2e-test-bucket-v3" }));
+});
+await pc2.goto(`${baseUrl}/options.html`, { waitUntil: "networkidle0" });
+await sleep(1400);
+const pc2Sig = await pc2.evaluate(() => {
+  const s = JSON.parse(localStorage.getItem("aa_snippets") || "[]").find((x) => x.shortcut === "/assinatura");
+  return s?.text ?? "";
+});
+check("Sincronização em Nuvem: Computador 2 recebe automaticamente os dados salvos no Computador 1", pc2Sig.includes("Dr. Arcanjo") && pc2Sig.includes("123456/SP"), true);
+await context2.close();
 
 await browser.close();
 server.close();
