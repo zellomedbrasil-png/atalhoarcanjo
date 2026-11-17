@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="arcanjo-app" content="1">
+  <title>Atalhos Arcanjo — Consultório</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <!-- Ícones (SVG) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-steth" viewBox="0 0 24 24"><path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+    <symbol id="i-printer" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></symbol>
+    <symbol id="i-pen-sign" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  </svg>
+
+  <div class="app">
+    <!-- Barra lateral -->
+    <nav class="sidebar" aria-label="Navegação principal">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">A</div>
+        <div class="brand-text"><strong>Atalhos Arcanjo</strong><span>Consultório médico</span></div>
+      </div>
+      <a class="nav-item" href="#consulta" data-nav="consulta"><svg class="ic"><use href="#i-steth"/></svg><span>Consulta</span></a>
+      <a class="nav-item" href="#biblioteca" data-nav="biblioteca"><svg class="ic"><use href="#i-book"/></svg><span>Biblioteca</span></a>
+      <a class="nav-item" href="#editor" data-nav="editor"><svg class="ic"><use href="#i-pencil"/></svg><span>Editor</span></a>
+      <a class="nav-item" href="#config" data-nav="config"><svg class="ic"><use href="#i-sliders"/></svg><span>Configurações</span></a>
+      <a class="nav-item" href="#instalar" data-nav="instalar"><svg class="ic"><use href="#i-download"/></svg><span>Instalar extensão</span></a>
+      <div class="nav-foot">
+        <div class="nav-note"><svg class="ic"><use href="#i-lock"/></svg><span>100% liberado, local e privado</span></div>
+        <div class="nav-keys"><kbd>Ctrl</kbd><kbd>K</kbd><span>Comandos</span></div>
+      </div>
+    </nav>
+
+    <div class="main">
+      <header class="topbar">
+        <h1 id="viewTitle">Consulta</h1>
+        <button id="cmdkOpen" class="search-trigger" type="button" aria-label="Buscar atalho ou ação (Ctrl+K)">
+          <svg class="ic"><use href="#i-search"/></svg><span>Buscar atalho ou ação…</span><kbd>Ctrl K</kbd>
+        </button>
+        <span id="syncState" class="status-pill" aria-live="polite"></span>
+        <button id="themeToggle" class="btn btn-ghost icon-btn" type="button" aria-label="Alternar tema claro/escuro" title="Alternar tema claro/escuro"><svg class="ic"><use href="#i-moon"/></svg></button>
+      </header>
+
+      <!-- ================= CONSULTA ================= -->
+      <section class="view" data-view="consulta">
+        <div id="tipCard" class="tip" hidden>
+          <svg class="ic"><use href="#i-info"/></svg>
+          <p><strong>Fluxo mais rápido:</strong> preencha os <b>Dados do paciente</b> uma única vez. Atalhos como <code>/soap</code>, <code>/aga</code>, <code>/clcr</code>, <code>/fib4</code> e <code>/atestado</code> já abrem com esses campos preenchidos.</p>
+          <button id="tipClose" class="btn btn-ghost btn-sm" type="button">Entendi</button>
+        </div>
+
+        <div class="consult-grid">
+          <aside class="card patient" aria-labelledby="ptTitle">
+            <div class="card-head">
+              <div class="card-title"><svg class="ic"><use href="#i-user"/></svg><h2 id="ptTitle">Dados do paciente</h2></div>
+              <button id="newConsult" class="btn btn-sm" type="button" title="Limpar paciente e documento"><svg class="ic"><use href="#i-refresh"/></svg>Nova consulta</button>
+            </div>
+            <div class="pt-grid">
+              <label class="field span-2"><span>Nome</span><input data-pt="nome" type="text" autocomplete="off" placeholder="Nome do paciente"></label>
+              <label class="field"><span>Idade (anos)</span><input data-pt="idade" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></label>
+              <label class="field"><span>Sexo</span><select data-pt="sexo"><option value="">—</option><option>Feminino</option><option>Masculino</option></select></label>
+              <label class="field"><span>Peso (kg)</span><input data-pt="peso" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></label>
+              <label class="field"><span>Altura (m)</span><input data-pt="altura" type="text" inputmode="decimal" autocomplete="off" placeholder="1,70"></label>
+              <label class="field"><span>PA (mmHg)</span><input data-pt="pa" type="text" autocomplete="off" placeholder="120x80"></label>
+              <label class="field"><span>FC (bpm)</span><input data-pt="fc" type="text" inputmode="numeric" autocomplete="off" placeholder="—"></label>
+            </div>
+            <details class="pt-more" open>
+              <summary><svg class="ic chev"><use href="#i-chevron"/></svg>Exames laboratoriais</summary>
+              <div class="pt-grid">
+                <label class="field"><span>Creatinina</span><input data-pt="creatinina" type="text" inputmode="decimal" autocomplete="off" placeholder="mg/dL"></label>
+                <label class="field"><span>Plaquetas</span><input data-pt="plaquetas" type="text" inputmode="decimal" autocomplete="off" placeholder="mil/mm³"></label>
+                <label class="field"><span>AST (TGO)</span><input data-pt="ast" type="text" inputmode="decimal" autocomplete="off" placeholder="U/L"></label>
+                <label class="field"><span>ALT (TGP)</span><input data-pt="alt" type="text" inputmode="decimal" autocomplete="off" placeholder="U/L"></label>
+                <label class="field"><span>Bilirrubina total</span><input data-pt="bilirrubina" type="text" inputmode="decimal" autocomplete="off" placeholder="mg/dL"></label>
+                <label class="field"><span>INR</span><input data-pt="inr" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></label>
+                <label class="field"><span>Sódio</span><input data-pt="sodio" type="text" inputmode="decimal" autocomplete="off" placeholder="mEq/L"></label>
+              </div>
+            </details>
+            <div class="calcs" aria-live="polite">
+              <div class="calcs-title"><svg class="ic"><use href="#i-calc"/></svg>Cálculos automáticos</div>
+              <div class="calc" id="calc-imc"><div class="calc-txt"><span class="calc-name">IMC</span><small class="s"></small></div><b class="v">—</b></div>
+              <div class="calc" id="calc-clcr"><div class="calc-txt"><span class="calc-name">ClCr (Cockcroft-Gault)</span><small class="s"></small></div><b class="v">—</b></div>
+              <div class="calc" id="calc-fib4"><div class="calc-txt"><span class="calc-name">FIB-4</span><small class="s"></small></div><b class="v">—</b></div>
+              <div class="calc" id="calc-meld"><div class="calc-txt"><span class="calc-name">MELD-Na</span><small class="s"></small></div><b class="v">—</b></div>
+            </div>
+          </aside>
+
+          <div class="card doc">
+            <div class="doc-head">
+              <div>
+                <h2>Documento da consulta</h2>
+                <p class="muted">Digite um atalho (ex.: <code>/soap</code>) ou clique em um favorito abaixo.</p>
+              </div>
+              <div class="doc-actions">
+                <button id="padCopy" class="btn btn-primary" type="button"><svg class="ic"><use href="#i-copy"/></svg>Copiar</button>
+                <button id="padPrint" class="btn" type="button"><svg class="ic"><use href="#i-printer"/></svg>Imprimir</button>
+                <button id="padClear" class="btn btn-ghost icon-btn" type="button" aria-label="Limpar documento" title="Limpar documento"><svg class="ic"><use href="#i-trash"/></svg></button>
+              </div>
+            </div>
+            <div class="quick">
+              <div class="quick-row"><span class="quick-label"><svg class="ic"><use href="#i-star"/></svg>Favoritos</span><div id="favBar" class="quick-list"></div></div>
+              <div class="quick-row" id="recentRow" hidden><span class="quick-label"><svg class="ic"><use href="#i-clock"/></svg>Recentes</span><div id="recentBar" class="quick-list"></div></div>
+            </div>
+            <textarea id="tryBox" data-typefill-try spellcheck="true" aria-label="Documento da consulta" placeholder="Digite um atalho como /soap, /gastro, /hpylori, /aga, /clcr ou /atestado…"></textarea>
+            <div class="doc-foot">
+              <span id="charCount">0 caracteres</span>
+              <span class="keys"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Espaço</kbd> buscar atalho · <kbd>Ctrl</kbd>+<kbd>K</kbd> comandos</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= BIBLIOTECA ================= -->
+      <section class="view" data-view="biblioteca" hidden>
+        <div class="card lib">
+          <div class="lib-toolbar">
+            <div class="search-field">
+              <svg class="ic"><use href="#i-search"/></svg>
+              <input id="search" type="search" placeholder="Buscar por código, nome ou conteúdo…" aria-label="Buscar atalhos">
+            </div>
+            <span id="libCount" class="muted small"></span>
+            <button id="add" class="btn btn-primary" type="button"><svg class="ic"><use href="#i-plus"/></svg>Novo atalho</button>
+          </div>
+          <div id="folderChips" class="chips" role="toolbar" aria-label="Filtrar por especialidade"></div>
+          <div id="list" class="snip-list"></div>
+        </div>
+        <datalist id="folders"></datalist>
+      </section>
+
+      <!-- ================= EDITOR ================= -->
+      <section class="view" data-view="editor" hidden>
+        <div id="editorEmpty" class="card empty-state">
+          <svg class="ic big"><use href="#i-pencil"/></svg>
+          <h2>Nenhum atalho selecionado</h2>
+          <p class="muted">Escolha um atalho na Biblioteca ou crie um novo.</p>
+          <a href="#biblioteca" class="btn btn-primary">Abrir Biblioteca</a>
+        </div>
+
+        <div id="editorBody" hidden>
+          <div class="editor-head">
+            <a href="#biblioteca" class="btn btn-ghost btn-sm"><svg class="ic"><use href="#i-arrow-left"/></svg>Biblioteca</a>
+            <span id="editorCrumb" class="crumb"></span>
+            <span class="grow"></span>
+            <span id="saved" class="saved" aria-live="polite"></span>
+            <button id="favBtn" class="btn btn-sm star-btn" type="button" aria-pressed="false"><svg class="ic"><use href="#i-star"/></svg><span>Favorito</span></button>
+            <button id="duplicateBtn" class="btn btn-sm" type="button"><svg class="ic"><use href="#i-copy"/></svg>Duplicar</button>
+            <button id="runInPad" class="btn btn-primary btn-sm" type="button"><svg class="ic"><use href="#i-zap"/></svg>Usar na consulta</button>
+          </div>
+
+          <div class="card editor-meta">
+            <div class="meta-grid">
+              <label class="field"><span>Atalho</span><input id="shortcut" class="mono" placeholder="/exemplo" spellcheck="false" autocomplete="off"></label>
+              <label class="field"><span>Nome</span><input id="label" placeholder="Para que serve este atalho" autocomplete="off"></label>
+              <label class="field"><span>Especialidade / pasta</span><input id="folder" list="folders" placeholder="Ex.: 02. Gastroenterologia & Hepatologia" autocomplete="off"></label>
+            </div>
+            <p id="clash" class="warn" hidden></p>
+          </div>
+
+          <div class="editor-grid">
+            <div class="card editor-main">
+              <div class="toolbar" role="toolbar" aria-label="Inserir no texto">
+                <details class="menu">
+                  <summary class="btn btn-sm">Campos<svg class="ic chev"><use href="#i-chevron"/></svg></summary>
+                  <div class="menu-pop">
+                    <button type="button" data-insert="{formtext: name=Paciente}"><strong>Caixa de texto</strong><small>Campo curto para preencher</small></button>
+                    <button type="button" data-insert="{formparagraph: name=Observações}"><strong>Parágrafo</strong><small>Texto de várias linhas</small></button>
+                    <button type="button" data-insert="{formmenu: name=Conduta; default=Opção 1; Opção 2; Opção 3}"><strong>Menu de opções</strong><small>Lista suspensa (1ª opção é o padrão)</small></button>
+                    <button type="button" data-insert="{formdate: name=Retorno; format=DD/MM/YYYY; default=+30D}"><strong>Seletor de data</strong><small>Ex.: retorno em 30 dias</small></button>
+                    <button type="button" data-insert="{formtoggle: name=Incluir observação}Texto opcional aqui{endformtoggle}"><strong>Trecho opcional</strong><small>Liga/desliga um parágrafo</small></button>
+                    <hr>
+                    <button type="button" data-insert="{time: DD/MM/YYYY}"><strong>Data de hoje</strong><small>DD/MM/AAAA</small></button>
+                    <button type="button" data-insert="{time: D [de] MMMM [de] YYYY}"><strong>Data por extenso</strong><small>17 de novembro de 2026</small></button>
+                    <button type="button" data-insert="{clipboard}"><strong>Área de transferência</strong><small>O que você copiou por último</small></button>
+                    <button type="button" data-insert="{cursor}"><strong>Posição do cursor</strong><small>Onde o cursor para no final</small></button>
+                  </div>
+                </details>
+                <details class="menu">
+                  <summary class="btn btn-sm">Lógica<svg class="ic chev"><use href="#i-chevron"/></svg></summary>
+                  <div class="menu-pop">
+                    <button type="button" data-insert="{if: Campo = 'Sim'}Texto se verdadeiro{else}Texto alternativo{endif}"><strong>Condicional (se / senão)</strong><small>Muda o texto conforme uma escolha</small></button>
+                    <button type="button" data-insert="{=Campo}"><strong>Repetir um campo</strong><small>Reaproveita o valor digitado</small></button>
+                    <button type="button" data-insert="{=round(Campo * 2, 1)}"><strong>Fórmula matemática</strong><small>+ − × ÷, round, min, max…</small></button>
+                    <button type="button" data-insert="{note}{formmenu: name=Escolha; default=Sim; Não}{endnote}"><strong>Campo oculto</strong><small>Pergunta sem imprimir no texto</small></button>
+                  </div>
+                </details>
+                <details class="menu">
+                  <summary class="btn btn-sm">Calculadoras<svg class="ic chev"><use href="#i-chevron"/></svg></summary>
+                  <div class="menu-pop">
+                    <button type="button" data-insert="{=imc(Peso (kg), Altura (m))} kg/m² ({=classImc(Peso (kg), Altura (m), Idade)})"><strong>IMC + classificação</strong><small>Adulto (OMS) e idoso ≥ 60 anos</small></button>
+                    <button type="button" data-insert="{=cockcroft(Idade (anos), Peso (kg), Creatinina (mg/dL), Sexo)} mL/min ({=estagioDrc(cockcroft(Idade (anos), Peso (kg), Creatinina (mg/dL), Sexo))})"><strong>Clearance — Cockcroft-Gault</strong><small>Com estágio renal G1–G5</small></button>
+                    <button type="button" data-insert="{=fib4(Idade, AST (U/L), ALT (U/L), Plaquetas (mil/mm³))} ({=riscoFib4(Idade, AST (U/L), ALT (U/L), Plaquetas (mil/mm³))})"><strong>FIB-4</strong><small>Fibrose hepática em MASLD</small></button>
+                    <button type="button" data-insert="{=meld(Bilirrubina Total (mg/dL), INR, Creatinina (mg/dL), Sódio (mEq/L))}"><strong>MELD-Na</strong><small>Hepatopatia crônica</small></button>
+                    <button type="button" data-insert="{=pesoIdeal(Altura (m), Sexo)} kg"><strong>Peso ideal</strong><small>Por altura e sexo</small></button>
+                    <button type="button" data-insert="{=doseKg(Peso (kg), 15, 1000)} mg"><strong>Dose por kg</strong><small>Peso × mg/kg, com dose máxima</small></button>
+                  </div>
+                </details>
+                <details class="menu">
+                  <summary class="btn btn-sm">Automação<svg class="ic chev"><use href="#i-chevron"/></svg></summary>
+                  <div class="menu-pop">
+                    <button type="button" data-insert="{key: tab}"><strong>Tecla Tab</strong><small>Pula para o próximo campo</small></button>
+                    <button type="button" data-insert="{key: shift+tab}"><strong>Shift + Tab</strong><small>Volta ao campo anterior</small></button>
+                    <button type="button" data-insert="{key: enter}"><strong>Tecla Enter</strong><small>Confirma / envia</small></button>
+                    <button type="button" data-insert="{wait: 0.5}"><strong>Pausa</strong><small>Aguarda meio segundo</small></button>
+                    <button type="button" data-insert="{site: selection}"><strong>Texto selecionado</strong><small>Usa o que estava selecionado na página</small></button>
+                    <button type="button" data-insert="{site: title}"><strong>Título da página</strong><small>Nome da aba atual</small></button>
+                  </div>
+                </details>
+                <button id="importBtn" class="btn btn-sm" type="button" title="Incluir outro atalho dentro deste (ex.: /assinatura)">Incluir atalho</button>
+                <span class="grow"></span>
+                <label class="switch"><input id="rich" type="checkbox"><span>Formatação</span></label>
+              </div>
+              <div id="formatBar" class="format-bar" role="toolbar" aria-label="Formatação" hidden>
+                <button type="button" data-cmd="bold" title="Negrito"><b>N</b></button>
+                <button type="button" data-cmd="italic" title="Itálico"><i>I</i></button>
+                <button type="button" data-cmd="underline" title="Sublinhado"><u>S</u></button>
+                <button type="button" data-cmd="insertUnorderedList" title="Lista com marcadores">• Lista</button>
+                <button type="button" data-cmd="insertOrderedList" title="Lista numerada">1. Lista</button>
+                <button type="button" data-cmd="link" title="Inserir link">Link</button>
+                <button type="button" data-cmd="image" title="Imagem a partir de endereço web">Imagem</button>
+                <button type="button" data-cmd="removeFormat" title="Limpar formatação">Limpar</button>
+              </div>
+              <textarea id="text" spellcheck="true" aria-label="Texto do atalho"></textarea>
+              <div id="richText" class="rich" contenteditable="true" spellcheck="true" aria-label="Texto formatado do atalho" hidden></div>
+              <div class="ask" id="ask" hidden>
+                <input id="askInput" autocomplete="off">
+                <button id="askOk" class="btn btn-primary btn-sm" type="button">Inserir</button>
+                <button id="askCancel" class="btn btn-sm" type="button">Cancelar</button>
+              </div>
+              <div class="editor-foot">
+                <label class="switch"><input id="off" type="checkbox"><span>Desativar este atalho</span></label>
+                <span class="grow"></span>
+                <button id="delete" class="btn btn-danger btn-sm" type="button"><svg class="ic"><use href="#i-trash"/></svg><span>Excluir</span></button>
+              </div>
+            </div>
+
+            <div class="card editor-side">
+              <div class="side-head"><h3>Pré-visualização</h3><span class="muted small">com valores padrão</span></div>
+              <p id="proNote" class="pro-note" hidden></p>
+              <div id="preview" class="preview"></div>
+              <details class="help">
+                <summary><svg class="ic chev"><use href="#i-chevron"/></svg>Referência rápida de comandos</summary>
+                <ul>
+                  <li><code>{formtext: name=Nome; default=João}</code> caixa de texto</li>
+                  <li><code>{formmenu: name=Dose; default=20mg; 40mg}</code> menu de opções</li>
+                  <li><code>{formdate: name=Retorno; default=+30D}</code> seletor de data</li>
+                  <li><code>{formtoggle: name=Obs}…{endformtoggle}</code> trecho opcional</li>
+                  <li><code>{if: Sexo = 'Feminino'}…{else}…{endif}</code> condicional</li>
+                  <li><code>{=imc(Peso, Altura)}</code> · <code>{=cockcroft(Idade, Peso, Creatinina, Sexo)}</code></li>
+                  <li><code>{=fib4(Idade, AST, ALT, Plaquetas)}</code> · <code>{=meld(Bili, INR, Cr, Na)}</code></li>
+                  <li><code>{import: /assinatura}</code> inclui outro atalho</li>
+                  <li><code>{key: tab}</code> · <code>{wait: 0.5}</code> automação de formulários</li>
+                  <li><code>{time: DD/MM/YYYY; shift=+7D}</code> datas · <code>{cursor}</code> posição final</li>
+                </ul>
+                <p class="muted small">Campos chamados <b>Nome do Paciente, Idade, Sexo, Peso, Altura, PA, FC, Creatinina, AST, ALT, Plaquetas, Bilirrubina, INR e Sódio</b> são preenchidos automaticamente com os Dados do paciente.</p>
+              </details>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= CONFIGURAÇÕES ================= -->
+      <section class="view" data-view="config" hidden>
+        <div class="config-grid">
+          <div class="card cfg-card span-2">
+            <div class="card-head">
+              <div class="card-title"><svg class="ic"><use href="#i-pen-sign"/></svg><h2>Assinatura médica</h2></div>
+              <span class="muted small">Usada em <code>/receita</code>, <code>/atestado</code>, <code>/relatorio</code> e <code>/encaminhamento</code></span>
+            </div>
+            <div class="sig-grid">
+              <div class="sig-form">
+                <label class="field"><span>Nome completo</span><input id="sigNome" type="text" autocomplete="off" placeholder="Dr(a). Nome Sobrenome"></label>
+                <label class="field"><span>Especialidades</span><input id="sigEsp" type="text" autocomplete="off" placeholder="Clínica Médica · Gastroenterologia · Geriatria"></label>
+                <div class="two">
+                  <label class="field"><span>CRM / UF</span><input id="sigCrm" type="text" autocomplete="off" placeholder="000000/UF"></label>
+                  <label class="field"><span>RQE</span><input id="sigRqe" type="text" autocomplete="off" placeholder="00000"></label>
+                </div>
+                <label class="field"><span>Linha adicional (opcional)</span><input id="sigExtra" type="text" autocomplete="off" placeholder="Endereço, telefone ou e-mail do consultório"></label>
+                <div><button id="saveSig" class="btn btn-primary" type="button"><svg class="ic"><use href="#i-check"/></svg>Salvar assinatura</button></div>
+              </div>
+              <div class="sig-preview-wrap">
+                <span class="muted small">Pré-visualização</span>
+                <pre id="sigPreview" class="sig-preview"></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="card cfg-card">
+            <div class="card-head"><div class="card-title"><svg class="ic"><use href="#i-zap"/></svg><h2>Expansão de atalhos</h2></div></div>
+            <label class="switch row"><input id="enabled" type="checkbox" checked><span>Expandir atalhos automaticamente ao digitar</span></label>
+            <label class="switch row"><input id="patientEverywhere" type="checkbox"><span>Usar os Dados do paciente também em prontuários e sites</span></label>
+            <label class="field"><span>Não expandir nestes sites</span><input id="blocked" type="text" placeholder="banco.com.br, outro.org" spellcheck="false"></label>
+          </div>
+
+          <div class="card cfg-card">
+            <div class="card-head"><div class="card-title"><svg class="ic"><use href="#i-moon"/></svg><h2>Aparência</h2></div></div>
+            <label class="field"><span>Tema</span>
+              <select id="themeSelect">
+                <option value="auto">Automático (segue o sistema)</option>
+                <option value="light">Claro</option>
+                <option value="dark">Escuro</option>
+              </select>
+            </label>
+            <label class="switch row"><input id="tipShow" type="checkbox"><span>Mostrar dica de uso na tela de Consulta</span></label>
+          </div>
+
+          <div class="card cfg-card span-2">
+            <div class="card-head"><div class="card-title"><svg class="ic"><use href="#i-refresh"/></svg><h2>Backup e sincronização</h2></div></div>
+            <label class="switch row"><input id="syncOn" type="checkbox" checked><span>Sincronizar atalhos pela conta do navegador (Chrome/Edge)</span></label>
+            <div class="btn-row">
+              <button id="export" class="btn" type="button"><svg class="ic"><use href="#i-download"/></svg>Exportar backup (.json)</button>
+              <button id="import" class="btn" type="button">Importar (.json / .csv)</button>
+              <button id="restoreMedical" class="btn" type="button"><svg class="ic"><use href="#i-refresh"/></svg>Restaurar pacote médico padrão</button>
+              <input id="file" type="file" accept=".json,.csv,application/json,text/csv" hidden>
+            </div>
+            <p class="muted small">Restaurar adiciona apenas os atalhos padrão que estiverem faltando. Seus atalhos personalizados não são alterados.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= INSTALAR ================= -->
+      <section class="view" data-view="instalar" hidden>
+        <div id="installedNote" class="tip ok" hidden>
+          <svg class="ic"><use href="#i-check"/></svg>
+          <p><strong>A extensão já está instalada neste navegador.</strong> Seus atalhos funcionam em qualquer site. Para atualizar, use o botão ↻ em <code>chrome://extensions</code>.</p>
+        </div>
+        <div class="card install">
+          <div class="card-head">
+            <div class="card-title"><svg class="ic"><use href="#i-download"/></svg><h2>Instale em 3 passos (cerca de 15 segundos)</h2></div>
+          </div>
+          <p class="muted">Com a extensão, os atalhos funcionam dentro de prontuários web, WhatsApp Web, Gmail, Outlook e Google Docs.</p>
+          <ol class="steps">
+            <li class="step">
+              <span class="step-num">1</span>
+              <div>
+                <strong>Copie o caminho da pasta da extensão</strong>
+                <p class="muted small">Ou baixe o arquivo ZIP para instalar em outro computador.</p>
+                <code id="folderPathCode" class="path-code">c:\Users\1\OneDrive\Área de Trabalho\atalhosarcanjo\dist\chrome</code>
+                <div class="btn-row">
+                  <button id="copyFolderPath" class="btn btn-primary btn-sm" type="button"><svg class="ic"><use href="#i-copy"/></svg>Copiar caminho</button>
+                  <a class="btn btn-sm" href="Atalhos-Arcanjo-Chrome-Edge.zip" download="Atalhos-Arcanjo-Chrome-Edge.zip"><svg class="ic"><use href="#i-download"/></svg>ZIP Chrome / Edge / Brave</a>
+                  <a class="btn btn-sm" href="Atalhos-Arcanjo-Firefox.zip" download="Atalhos-Arcanjo-Firefox.zip"><svg class="ic"><use href="#i-download"/></svg>ZIP Firefox</a>
+                </div>
+              </div>
+            </li>
+            <li class="step">
+              <span class="step-num">2</span>
+              <div>
+                <strong>Abra a página de extensões e ative o “Modo do desenvolvedor”</strong>
+                <p class="muted small">Cole o endereço na barra do navegador. A chave fica no canto superior direito.</p>
+                <div class="btn-row">
+                  <button id="copyChromeExtUrl" class="btn btn-sm" type="button"><svg class="ic"><use href="#i-copy"/></svg>chrome://extensions</button>
+                  <button id="copyEdgeExtUrl" class="btn btn-sm" type="button"><svg class="ic"><use href="#i-copy"/></svg>edge://extensions</button>
+                </div>
+              </div>
+            </li>
+            <li class="step">
+              <span class="step-num">3</span>
+              <div>
+                <strong>Clique em “Carregar sem compactação” e cole o caminho (Ctrl+V)</strong>
+                <p class="muted small">Pronto. Os atalhos passam a funcionar em qualquer página aberta.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Paleta de comandos -->
+  <dialog id="cmdk" class="cmdk" aria-label="Paleta de comandos">
+    <div class="cmdk-input">
+      <svg class="ic"><use href="#i-search"/></svg>
+      <input id="cmdkInput" type="text" placeholder="Buscar atalho ou ação…" autocomplete="off" aria-label="Buscar atalho ou ação">
+      <kbd>Esc</kbd>
+    </div>
+    <ul id="cmdkList" class="cmdk-list" role="listbox"></ul>
+    <div class="cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd> navegar</span><span><kbd>Enter</kbd> executar</span></div>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="medical-starters.js"></script>
+  <script src="template.js"></script>
+  <script src="html.js"></script>
+  <script src="options.js"></script>
+  <script src="guard.js"></script>
+  <script src="content.js"></script>
+</body>
+</html>

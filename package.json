@@ -1,0 +1,14 @@
+{
+  "name": "atalhos-arcanjo",
+  "version": "2.0.0",
+  "description": "Atalhos Arcanjo — Expansor de Texto Médico (Gastroenterologia, Geriatria, Clínica Médica) e Produtividade Profissional 100% em Português e 100% Liberado",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node build.mjs && node test/template.mjs && node test/e2e.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.16.0"
+  }
+}
