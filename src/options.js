@@ -82,8 +82,27 @@ window.matchMedia?.("(prefers-color-scheme: dark)").addEventListener?.("change",
 });
 
 // ---- Navegação entre Telas (Hash Router) ----
+function isBlankGhost(s) {
+  if (!s) return true;
+  const sc = (s.shortcut ?? "").trim();
+  const lb = (s.label ?? "").trim();
+  const tx = (s.rich ? H.toText(s.html ?? "") : (s.text ?? "")).trim();
+  return (!sc || sc === "/") && !lb && !tx;
+}
+
 function setView(viewName, snippetId = null) {
   const valid = VIEW_TITLES[viewName] ? viewName : "consulta";
+  // Se estava no editor de um rascunho totalmente em branco e saiu sem preencher, remove o rascunho vazio
+  if (activeView === "editor" && valid !== "editor") {
+    const beforeLen = snippets.length;
+    snippets = snippets.filter((s) => !isBlankGhost(s));
+    if (snippets.length !== beforeLen) {
+      if (!snippets.some((s) => s.id === current)) current = sorted()[0]?.id ?? null;
+      void save();
+      drawQuickBars();
+      drawList();
+    }
+  }
   activeView = valid;
   if (snippetId) pick(snippetId, false);
   for (const sec of document.querySelectorAll(".view[data-view]")) {
@@ -116,9 +135,23 @@ window.addEventListener("hashchange", handleHash);
 // ---- Inicialização ----
 async function start() {
   const data = await storageLocal.get([
-    "snippets", "uses", "settings", "syncState", "clinicalPadDraft", "patientContext", "tipHidden"
+    "snippets", "uses", "settings", "syncState", "clinicalPadDraft", "patientContext", "tipHidden", "deleted"
   ]);
-  snippets = data.snippets ?? [];
+  const rawSnippets = data.snippets ?? [];
+  const localDel = data.deleted ?? {};
+  // Remove quaisquer rascunhos em branco ("Sem título" / "(sem código)") e registra na lista de excluídos
+  let ghostCleaned = false;
+  for (const s of rawSnippets) {
+    if (isBlankGhost(s) && s?.id) {
+      localDel[s.id] = Date.now();
+      if (s.shortcut) localDel[`sc:${s.shortcut.trim().toLowerCase()}`] = Date.now();
+      ghostCleaned = true;
+    }
+  }
+  snippets = rawSnippets.filter((s) => !isBlankGhost(s));
+  if (ghostCleaned) {
+    await storageLocal.set({ snippets, deleted: localDel });
+  }
   if (!snippets.length && STARTERS.length) {
     // Atalhos padrão recebem carimbo base (1000) para que qualquer edição na nuvem tenha prioridade ao sincronizar em um novo PC
     snippets = STARTERS.map((s, i) => ({
@@ -195,7 +228,7 @@ function mergeWithCloud(localList, localDel, remoteList, remoteDel) {
   const byKey = new Map();
   const keyFor = (s) => (s.shortcut ? `sc:${s.shortcut.trim().toLowerCase()}` : `id:${s.id}`);
   for (const s of [...(localList ?? []), ...(remoteList ?? [])]) {
-    if (!s) continue;
+    if (!s || isBlankGhost(s)) continue;
     const k = keyFor(s);
     const prev = byKey.get(k);
     if (!prev || stampOf(s) > stampOf(prev)) {
@@ -449,9 +482,41 @@ function drawQuickBars() {
   for (const s of recents) recentBar.append(makeQuickChip(s));
 }
 
+const SHORT_NAMES = {
+  "/soap": "SOAP + IMC",
+  "/consulta": "1ª Consulta",
+  "/ef": "Exame Físico + IMC",
+  "/retorno": "Consulta de Retorno",
+  "/checkup": "Exames de Check-up",
+  "/gastro": "Anamnese Gastro",
+  "/drge": "DRGE / Dispepsia",
+  "/hpylori": "Erradicação H. pylori",
+  "/sii": "Conduta SII",
+  "/fib4": "Esteatose & FIB-4",
+  "/meld": "Cirrose & MELD-Na",
+  "/prep-eda": "Preparo EDA",
+  "/prep-colono": "Preparo Colonoscopia",
+  "/laudo-eda": "Laudo EDA / Colono",
+  "/exames-gastro": "Painel Gastro/Hepato",
+  "/aga": "AGA Geriatria",
+  "/clcr": "ClCr Cockcroft-Gault",
+  "/quedas": "Prevenção de Quedas",
+  "/delirium": "Delirium e Sono",
+  "/desprescricao": "Desprescrição (Beers)",
+  "/receita": "Receituário Médico",
+  "/atestado": "Atestado Médico",
+  "/relatorio": "Relatório Médico",
+  "/encaminhamento": "Encaminhamento",
+  "/assinatura": "Assinatura Médica",
+};
+
 function shortLabel(s) {
-  const raw = s.label || s.shortcut || "Atalho";
-  return raw.split(" (")[0].split(" — ")[0].slice(0, 28);
+  if (s.shortcut && SHORT_NAMES[s.shortcut]) return SHORT_NAMES[s.shortcut];
+  const raw = (s.label || s.shortcut || "Atalho").split(" (")[0].split(" — ")[0].trim();
+  if (raw.length <= 26) return raw;
+  const cut = raw.slice(0, 26);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 12 ? cut.slice(0, lastSpace) : cut) + "…";
 }
 
 function makeQuickChip(s) {
@@ -525,13 +590,47 @@ $("padPrint").addEventListener("click", () => {
   win.document.close();
 });
 
-// ---- Biblioteca de Atalhos ----
+// ---- Biblioteca de Atalhos (Grade de Cartões por Especialidade) ----
 function sorted() {
-  return [...snippets].sort((a, b) => (a.folder ?? "").localeCompare(b.folder ?? "") || (a.shortcut ?? "").localeCompare(b.shortcut ?? ""));
+  return [...snippets].filter((s) => !isBlankGhost(s)).sort((a, b) => (a.folder ?? "").localeCompare(b.folder ?? "") || (a.shortcut ?? "").localeCompare(b.shortcut ?? ""));
 }
 
 function plainOf(s) {
   return s.rich ? H.toText(s.html ?? "") : s.text ?? "";
+}
+
+// Transforma o código do template em um resumo limpo e legível para exibir no cartão da Biblioteca
+function cleanExcerpt(s) {
+  const raw = plainOf(s);
+  return raw
+    .replace(/\{form(?:text|paragraph|menu|date):\s*name=([^;}]+)[^}]*\}/gi, "[$1]")
+    .replace(/\{formtoggle:\s*name=([^;}]+)[^}]*\}/gi, "")
+    .replace(/\{(?:endformtoggle|endnote|note|else|endif|cursor|clipboard)\}/gi, "")
+    .replace(/\{(?:if|elseif|key|wait|site|import):[^}]*\}/gi, "")
+    .replace(/\{=imc\([^}]*\)\}/gi, "[IMC]")
+    .replace(/\{=classImc\([^}]*\)\}/gi, "[Classificação IMC]")
+    .replace(/\{=cockcroft\([^}]*\)\}/gi, "[ClCr]")
+    .replace(/\{=estagioDrc\([^}]*\)\}/gi, "[Estágio Renal]")
+    .replace(/\{=fib4\([^}]*\)\}/gi, "[FIB-4]")
+    .replace(/\{=riscoFib4\([^}]*\)\}/gi, "[Risco FIB-4]")
+    .replace(/\{=meld\([^}]*\)\}/gi, "[MELD-Na]")
+    .replace(/\{=([^}]+)\}/g, "[$1]")
+    .replace(/\{time:[^}]*\}/gi, "[Data]")
+    .replace(/^#+\s*/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function snippetMetaBadges(s) {
+  const src = s.rich ? (s.html ?? "") : (s.text ?? "");
+  const tree = T.parse(src);
+  const flds = T.fields(tree);
+  const adv = T.advancedParts ? T.advancedParts(tree) : [];
+  const badges = [];
+  if (flds.length) badges.push({ text: `${flds.length} ${flds.length === 1 ? "campo" : "campos"}`, calc: false });
+  if (adv.includes("fórmulas e calculadoras")) badges.push({ text: "Calculadora", calc: true });
+  else if (adv.includes("condicionais (se/senão)")) badges.push({ text: "Condicional", calc: true });
+  return badges;
 }
 
 function drawList() {
@@ -541,7 +640,8 @@ function drawList() {
   list.textContent = "";
   chipsBox.textContent = "";
 
-  const allFolders = [...new Set(snippets.map((s) => s.folder).filter(Boolean))].sort();
+  const cleanSnippets = sorted();
+  const allFolders = [...new Set(cleanSnippets.map((s) => s.folder).filter(Boolean))].sort();
   if (selectedFolder && selectedFolder !== "__fav__" && !allFolders.includes(selectedFolder)) {
     selectedFolder = "";
   }
@@ -555,101 +655,175 @@ function drawList() {
     return b;
   };
 
-  chipsBox.append(makeChip("", `Todas (${snippets.length})`));
-  const favCount = snippets.filter((s) => s.fav).length;
+  chipsBox.append(makeChip("", `Todas (${cleanSnippets.length})`));
+  const favCount = cleanSnippets.filter((s) => s.fav).length;
   chipsBox.append(makeChip("__fav__", `★ Favoritos (${favCount})`));
   for (const f of allFolders) {
-    const c = snippets.filter((s) => s.folder === f).length;
+    const c = cleanSnippets.filter((s) => s.folder === f).length;
     const cleanName = f.replace(/^\d+\.\s*/, "");
     chipsBox.append(makeChip(f, `${cleanName} (${c})`));
   }
 
-  const shown = sorted().filter((s) => {
+  const shown = cleanSnippets.filter((s) => {
     if (selectedFolder === "__fav__" && !s.fav) return false;
     if (selectedFolder && selectedFolder !== "__fav__" && (s.folder ?? "") !== selectedFolder) return false;
     return !q || [s.shortcut, s.label, s.folder, plainOf(s)].some((v) => (v ?? "").toLowerCase().includes(q));
   });
 
-  $("libCount").textContent = `${shown.length} de ${snippets.length} atalhos`;
+  $("libCount").textContent = `${shown.length} de ${cleanSnippets.length} atalhos`;
 
-  let folder = null;
+  // Agrupa os atalhos por pasta/especialidade para renderizar em seções com grade de cartões
+  const groups = new Map();
   for (const s of shown) {
-    if ((s.folder ?? "") !== folder) {
-      folder = s.folder ?? "";
-      if (folder) {
-        const head = document.createElement("div");
-        head.className = "folder-head";
-        head.textContent = folder;
-        list.append(head);
+    const f = s.folder || "Outros Atalhos";
+    if (!groups.has(f)) groups.set(f, []);
+    groups.get(f).push(s);
+  }
+
+  for (const [folderName, items] of groups.entries()) {
+    const section = document.createElement("div");
+    section.className = "folder-section";
+
+    const head = document.createElement("div");
+    head.className = "folder-head";
+    const headTitle = document.createElement("span");
+    headTitle.className = "folder-head-title";
+    headTitle.textContent = folderName;
+    const headCount = document.createElement("span");
+    headCount.className = "folder-head-count";
+    headCount.textContent = `${items.length} ${items.length === 1 ? "atalho" : "atalhos"}`;
+    head.append(headTitle, headCount);
+
+    const grid = document.createElement("div");
+    grid.className = "folder-grid";
+
+    for (const s of items) {
+      const card = document.createElement("div");
+      card.className = `snip-row${s.off ? " off" : ""}`;
+      card.tabIndex = 0;
+
+      // Topo do cartão: Código + Badges à esquerda, Estrela + Excluir à direita
+      const top = document.createElement("div");
+      top.className = "snip-card-top";
+
+      const badgesWrap = document.createElement("div");
+      badgesWrap.className = "snip-badges";
+      const key = document.createElement("span");
+      key.className = "snip-key";
+      key.textContent = s.shortcut || "(sem código)";
+      badgesWrap.append(key);
+
+      for (const b of snippetMetaBadges(s)) {
+        const tag = document.createElement("span");
+        tag.className = `snip-tag${b.calc ? " calc-tag" : ""}`;
+        tag.textContent = b.text;
+        badgesWrap.append(tag);
       }
+
+      const iconsWrap = document.createElement("div");
+      iconsWrap.className = "snip-card-icons";
+
+      const star = document.createElement("button");
+      star.type = "button";
+      star.className = `snip-star${s.fav ? " on" : ""}`;
+      star.title = s.fav ? "Remover dos favoritos" : "Fixar nos favoritos";
+      star.setAttribute("aria-label", star.title);
+      star.innerHTML = `<svg class="ic"><use href="#i-star"/></svg>`;
+      star.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        s.fav = !s.fav;
+        s.edited = Date.now();
+        await save();
+        drawQuickBars();
+        drawList();
+        if (current === s.id) updateFavBtn(s);
+      });
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "snip-del";
+      delBtn.title = "Excluir este atalho";
+      delBtn.setAttribute("aria-label", "Excluir este atalho");
+      delBtn.innerHTML = `<svg class="ic"><use href="#i-trash"/></svg>`;
+      delBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        snippets = snippets.filter((x) => x.id !== s.id);
+        const { deleted = {} } = await storageLocal.get("deleted");
+        const delTime = Date.now();
+        deleted[s.id] = delTime;
+        if (s.shortcut) deleted[`sc:${s.shortcut.trim().toLowerCase()}`] = delTime;
+        await save({ deleted });
+        drawQuickBars();
+        drawList();
+        toast(`Atalho ${s.shortcut || ""} excluído`);
+      });
+
+      iconsWrap.append(star, delBtn);
+      top.append(badgesWrap, iconsWrap);
+
+      // Corpo do cartão: Título completo + Resumo limpo sem códigos {form...}
+      const main = document.createElement("div");
+      main.className = "snip-main";
+      const title = document.createElement("span");
+      title.className = "snip-title";
+      title.textContent = s.label || s.shortcut || "Atalho personalizado";
+      const excerpt = document.createElement("span");
+      excerpt.className = "snip-excerpt";
+      excerpt.textContent = cleanExcerpt(s).slice(0, 160);
+      main.append(title, excerpt);
+
+      // Rodapé do cartão: Contagem de uso + Botões Editar e Usar
+      const foot = document.createElement("div");
+      foot.className = "snip-card-foot";
+
+      const meta = document.createElement("div");
+      meta.className = "snip-meta";
+      const n = uses[s.id]?.n ?? 0;
+      meta.textContent = n ? `Usado ${n}x` : "Pronto para uso";
+
+      const actions = document.createElement("div");
+      actions.className = "snip-actions";
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "btn btn-sm";
+      editBtn.textContent = "Editar";
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        pick(s.id, false);
+        setView("editor", s.id);
+      });
+
+      const useBtn = document.createElement("button");
+      useBtn.type = "button";
+      useBtn.className = "btn btn-primary btn-sm";
+      useBtn.textContent = "Usar";
+      useBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        triggerShortcutInPad(s.shortcut);
+      });
+
+      actions.append(editBtn, useBtn);
+      foot.append(meta, actions);
+
+      card.append(top, main, foot);
+      card.addEventListener("click", () => {
+        pick(s.id, false);
+        setView("editor", s.id);
+      });
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { pick(s.id, false); setView("editor", s.id); }
+      });
+      grid.append(card);
     }
-    const row = document.createElement("div");
-    row.className = `snip-row${s.off ? " off" : ""}`;
-    row.tabIndex = 0;
 
-    const star = document.createElement("button");
-    star.type = "button";
-    star.className = `snip-star${s.fav ? " on" : ""}`;
-    star.title = s.fav ? "Remover dos favoritos" : "Adicionar aos favoritos";
-    star.setAttribute("aria-label", star.title);
-    star.innerHTML = `<svg class="ic"><use href="#i-star"/></svg>`;
-    star.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      s.fav = !s.fav;
-      s.edited = Date.now();
-      await save();
-      drawQuickBars();
-      drawList();
-      if (current === s.id) updateFavBtn(s);
-    });
-
-    const key = document.createElement("span");
-    key.className = "snip-key";
-    key.textContent = s.shortcut || "(sem código)";
-
-    const main = document.createElement("div");
-    main.className = "snip-main";
-    const title = document.createElement("span");
-    title.className = "snip-title";
-    title.textContent = s.label || "Sem título";
-    const excerpt = document.createElement("span");
-    excerpt.className = "snip-excerpt";
-    excerpt.textContent = plainOf(s).replace(/\s+/g, " ").slice(0, 110);
-    main.append(title, excerpt);
-
-    const meta = document.createElement("div");
-    meta.className = "snip-meta";
-    const n = uses[s.id]?.n ?? 0;
-    if (n) {
-      const u = document.createElement("span");
-      u.textContent = `${n}x`;
-      meta.append(u);
-    }
-    const useBtn = document.createElement("button");
-    useBtn.type = "button";
-    useBtn.className = "btn btn-sm";
-    useBtn.textContent = "Usar";
-    useBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      triggerShortcutInPad(s.shortcut);
-    });
-    meta.append(useBtn);
-
-    row.append(star, key, main, meta);
-    row.addEventListener("click", () => {
-      pick(s.id, false);
-      setView("editor", s.id);
-    });
-    row.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { pick(s.id, false); setView("editor", s.id); }
-    });
-    list.append(row);
+    section.append(head, grid);
+    list.append(section);
   }
 
   if (!shown.length) {
-    const empty = document.createElement("p");
-    empty.className = "muted";
-    empty.style.padding = "16px 8px";
+    const empty = document.createElement("div");
+    empty.className = "card empty-state";
     empty.textContent = "Nenhum atalho encontrado para este filtro.";
     list.append(empty);
   }

@@ -85,13 +85,14 @@ const check = (name, got, want) => {
   console.log(`${String(ticks).padStart(2)}. ${ok ? "✔" : "✘ FALHOU"} ${name}${ok ? "" : `\n     obtido:   ${JSON.stringify(got)}\n     esperado: ${typeof want === "function" ? want.toString() : JSON.stringify(want)}`}`);
 };
 
+const testBucketKey = `arcanjo-e2e-test-${Date.now()}`;
 const page = await browser.newPage();
 await page.setViewport({ width: 1440, height: 920 });
-await page.evaluateOnNewDocument(() => {
+await page.evaluateOnNewDocument((k) => {
   if (!localStorage.getItem("aa_settings")) {
-    localStorage.setItem("aa_settings", JSON.stringify({ cloudKey: "arcanjo-e2e-test-bucket-v3" }));
+    localStorage.setItem("aa_settings", JSON.stringify({ cloudKey: k }));
   }
-});
+}, testBucketKey);
 await page.goto(`${baseUrl}/options.html`, { waitUntil: "networkidle0" });
 await sleep(350);
 
@@ -218,9 +219,9 @@ await sleep(1200);
 // Simula Computador 2 (contexto anônimo limpo) abrindo o site da Vercel
 const context2 = await browser.createBrowserContext();
 const pc2 = await context2.newPage();
-await pc2.evaluateOnNewDocument(() => {
-  localStorage.setItem("aa_settings", JSON.stringify({ cloudKey: "arcanjo-e2e-test-bucket-v3" }));
-});
+await pc2.evaluateOnNewDocument((k) => {
+  localStorage.setItem("aa_settings", JSON.stringify({ cloudKey: k }));
+}, testBucketKey);
 await pc2.goto(`${baseUrl}/options.html`, { waitUntil: "networkidle0" });
 await sleep(1400);
 const pc2Sig = await pc2.evaluate(() => {
