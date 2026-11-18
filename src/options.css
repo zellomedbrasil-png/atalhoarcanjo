@@ -1487,8 +1487,13 @@ code {
   }
 
   /* Views e Espaçamentos Mobile */
+  .view, .lib, .card, .folder-section, .folder-grid, .snip-row {
+    min-width: 0;
+    max-width: 100%;
+  }
   .view {
     padding: 12px 12px 24px;
+    overflow-x: hidden;
   }
   .tip {
     font-size: 12px;
