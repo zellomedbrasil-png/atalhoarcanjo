@@ -163,11 +163,28 @@ async function start() {
       edited: 1000,
     }));
     await storageLocal.set({ snippets });
-  } else if (snippets.length && !snippets.some((s) => s.fav !== undefined)) {
-    for (const s of snippets) {
-      if (DEFAULT_FAVS.has(s.shortcut)) s.fav = true;
+  } else if (snippets.length && STARTERS.length) {
+    let changed = false;
+    if (!snippets.some((s) => s.fav !== undefined)) {
+      for (const s of snippets) {
+        if (DEFAULT_FAVS.has(s.shortcut)) s.fav = true;
+      }
+      changed = true;
     }
-    await storageLocal.set({ snippets });
+    // Garante que novos atalhos da aba Pessoal (00. Pessoal) sejam adicionados caso não tenham sido excluídos manualmente
+    for (const st of STARTERS) {
+      if (st.folder?.startsWith("00.") && !snippets.some((x) => x.shortcut === st.shortcut) && !localDel[`sc:${st.shortcut.toLowerCase()}`]) {
+        snippets.push({
+          id: `starter_${st.shortcut.replace(/[^a-z0-9]/gi, "")}`,
+          ...st,
+          fav: DEFAULT_FAVS.has(st.shortcut),
+          created: 1000,
+          edited: 1000,
+        });
+        changed = true;
+      }
+    }
+    if (changed) await storageLocal.set({ snippets });
   }
 
   uses = data.uses ?? {};
@@ -414,7 +431,25 @@ function updatePatientCalcs() {
   } else {
     setCalcRow("calc-meld", false, "—", "");
   }
+
+  // Atualiza badge resumido do paciente para o modo recolhido no celular
+  const badge = $("ptSummaryBadge");
+  if (badge) {
+    const parts = [];
+    if (p.nome) parts.push(p.nome.split(" ")[0]);
+    if (p.idade) parts.push(`${p.idade}a`);
+    if (hasImc) parts.push(`IMC ${T.evalExpr("imc(peso, altura)", { peso: p.peso, altura: p.altura })}`);
+    badge.textContent = parts.join(" · ");
+    badge.hidden = !parts.length;
+  }
 }
+
+$("ptToggleMobile")?.addEventListener("click", () => {
+  const card = $("patientCard");
+  if (!card) return;
+  const collapsed = card.classList.toggle("collapsed");
+  $("ptToggleMobile").setAttribute("aria-expanded", String(!collapsed));
+});
 
 for (const el of document.querySelectorAll("[data-pt]")) {
   const onPtChange = () => {
@@ -568,6 +603,19 @@ $("padCopy").addEventListener("click", async () => {
     document.execCommand("copy");
     toast("Documento copiado");
   }
+});
+
+$("padShare")?.addEventListener("click", async () => {
+  const val = $("tryBox").value.trim();
+  if (!val) { toast("O documento da consulta está vazio."); return; }
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "Atalhos Arcanjo — Documento Médico", text: val });
+      return;
+    } catch { /* cancelado pelo usuário */ return; }
+  }
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(val)}`;
+  window.open(waUrl, "_blank", "noopener");
 });
 
 $("padClear").addEventListener("click", () => {
@@ -784,6 +832,27 @@ function drawList() {
       const actions = document.createElement("div");
       actions.className = "snip-actions";
 
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "btn btn-sm";
+      copyBtn.textContent = "Copiar";
+      copyBtn.title = "Copiar o texto deste atalho para a área de transferência";
+      copyBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const resolve = (sc) => snippets.find((x) => x.shortcut === sc.trim() && x.id !== s.id)?.text ?? "";
+        const tree = T.parse(plainOf(s), resolve);
+        const flds = T.fields(tree);
+        const vals = {};
+        for (const f of flds) vals[f.name] = f.default;
+        const rendered = T.render(tree, vals, { now: new Date() }).replace(T.CARET, "").split(T.ACTION).join(" ");
+        try {
+          await navigator.clipboard.writeText(rendered);
+          toast(`Copiado: ${s.shortcut || s.label}`);
+        } catch {
+          toast("Não foi possível copiar automaticamente");
+        }
+      });
+
       const editBtn = document.createElement("button");
       editBtn.type = "button";
       editBtn.className = "btn btn-sm";
@@ -803,7 +872,7 @@ function drawList() {
         triggerShortcutInPad(s.shortcut);
       });
 
-      actions.append(editBtn, useBtn);
+      actions.append(copyBtn, editBtn, useBtn);
       foot.append(meta, actions);
 
       card.append(top, main, foot);
@@ -1141,7 +1210,7 @@ $("delete").addEventListener("blur", resetDelete);
 
 // ---- Configurações e Assinatura Médica ----
 function buildSignatureText(sig) {
-  const nome = (sig.nome || "").trim() || "Médico(a)";
+  const nome = (sig.nome || "").trim() || "Dr. Roberto Willamy Arcanjo Rego Filho";
   const esp = (sig.esp || "").trim() || "Clínica Médica · Gastroenterologia · Geriatria";
   const crm = (sig.crm || "").trim() || "_______________";
   const rqe = (sig.rqe || "").trim();
@@ -1158,7 +1227,7 @@ function buildSignatureText(sig) {
 
 function loadSignatureForm() {
   const sig = settings.signature ?? {};
-  $("sigNome").value = sig.nome ?? "";
+  $("sigNome").value = sig.nome || "Dr. Roberto Willamy Arcanjo Rego Filho";
   $("sigEsp").value = sig.esp ?? "Clínica Médica · Gastroenterologia · Geriatria";
   $("sigCrm").value = sig.crm ?? "";
   $("sigRqe").value = sig.rqe ?? "";

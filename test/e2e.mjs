@@ -152,10 +152,9 @@ check("Pré-preenchimento automático pelos Dados do Paciente funciona no /clcr"
 await page.screenshot({ path: join(ARTIFACT_DIR, "v3-consulta-claro.png"), fullPage: false });
 console.log("✔ Screenshot salvo: v3-consulta-claro.png");
 
-// 4. Testa Configuração de Assinatura Médica e uso em /atestado
+// 4. Testa Configuração de Assinatura Médica (já vem com Dr. Roberto Willamy Arcanjo Rego Filho) e uso em /atestado
 await page.click('.nav-item[data-nav="config"]');
 await sleep(200);
-await page.type("#sigNome", "Dr. Arcanjo");
 await page.type("#sigCrm", "123456/SP");
 await page.type("#sigRqe", "78910");
 await page.click("#saveSig");
@@ -172,7 +171,7 @@ await sleep(350);
 await page.keyboard.press("Enter");
 await sleep(300);
 const docAtestado = await page.$eval("#tryBox", (el) => el.value);
-check("Paleta Ctrl+K + Nome do Paciente + Assinatura configurada funcionam em /atestado", docAtestado, (t) => t.includes("Maria Clara Andrade") && t.includes("Dr. Arcanjo") && t.includes("CRM: 123456/SP | RQE: 78910"));
+check("Paleta Ctrl+K + Nome do Paciente + Assinatura de Dr. Roberto funcionam em /atestado", docAtestado, (t) => t.includes("Maria Clara Andrade") && t.includes("Dr. Roberto Willamy Arcanjo Rego Filho") && t.includes("CRM: 123456/SP | RQE: 78910"));
 
 // 5. Testa Biblioteca e Editor lado a lado
 await page.click('.nav-item[data-nav="biblioteca"]');
@@ -228,7 +227,21 @@ const pc2Sig = await pc2.evaluate(() => {
   const s = JSON.parse(localStorage.getItem("aa_snippets") || "[]").find((x) => x.shortcut === "/assinatura");
   return s?.text ?? "";
 });
-check("Sincronização em Nuvem: Computador 2 recebe automaticamente os dados salvos no Computador 1", pc2Sig.includes("Dr. Arcanjo") && pc2Sig.includes("123456/SP"), true);
+check("Sincronização em Nuvem: Computador 2 recebe automaticamente os dados salvos no Computador 1", pc2Sig.includes("Dr. Roberto Willamy Arcanjo Rego Filho") && pc2Sig.includes("123456/SP"), true);
+
+// 9. Testa Aba Pessoal (Dr. Roberto Arcanjo) e Layout Mobile (390x844)
+await pc2.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+await pc2.goto(`${baseUrl}/options.html#biblioteca`, { waitUntil: "networkidle0" });
+await sleep(300);
+await pc2.evaluate(() => {
+  const chip = [...document.querySelectorAll("#folderChips .chip")].find((c) => c.textContent.includes("Pessoal"));
+  if (chip) chip.click();
+});
+await sleep(250);
+const personalShortcuts = await pc2.$$eval(".snip-key", (els) => els.map((e) => e.textContent));
+check("Aba Pessoal contém /nome, /cpf, /cpfn, /email e /emailg", ["/nome", "/cpf", "/cpfn", "/email", "/emailg"].every((k) => personalShortcuts.includes(k)), true);
+await pc2.screenshot({ path: join(ARTIFACT_DIR, "v3-mobile-pessoal.png"), fullPage: false });
+console.log("✔ Screenshot salvo: v3-mobile-pessoal.png");
 await context2.close();
 
 await browser.close();

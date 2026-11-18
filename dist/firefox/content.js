@@ -823,7 +823,14 @@
     button { font: inherit; font-size: 13px; font-weight: 550; padding: 7px 15px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
     .ok { background: var(--primary); border-color: var(--primary); color: #fff; }
     .layer.dark .ok { color: #0C2225; font-weight: 650; }
-    .problem { margin: 0 0 10px; padding: 8px 10px; border-radius: 7px; background: #FEF6E7; color: #B7791F; }`;
+    .problem { margin: 0 0 10px; padding: 8px 10px; border-radius: 7px; background: #FEF6E7; color: #B7791F; }
+    @media (max-width: 640px) {
+      .box { top: auto; bottom: 0; left: 0; transform: none; width: 100vw; max-height: 88dvh; border-radius: 16px 16px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+      .hint { display: none; }
+      .fields { grid-template-columns: 1fr; }
+      input[type=text], input[type=date], input[type=search], textarea, select { font-size: 16px; padding: 9px 11px; }
+      .buttons button { flex: 1; min-height: 44px; font-size: 14px; }
+    }`;
 
   const SEARCH_CSS = `
     .box { padding: 14px; }

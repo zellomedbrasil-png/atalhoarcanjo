@@ -7,6 +7,72 @@
 
   const MEDICAL_STARTERS = [
     // =========================================================================
+    // 00. PESSOAL — DR. ROBERTO ARCANJO
+    // =========================================================================
+    {
+      shortcut: "/nome",
+      label: "Meu Nome Completo",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text: `Roberto Willamy Arcanjo Rego Filho`
+    },
+    {
+      shortcut: "/dr",
+      label: "Nome Médico com Título (Dr. Roberto Willamy Arcanjo Rego Filho)",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text: `Dr. Roberto Willamy Arcanjo Rego Filho`
+    },
+    {
+      shortcut: "/cpf",
+      label: "Meu CPF (Formatado com pontos e traço)",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text: `020.898.673-10`
+    },
+    {
+      shortcut: "/cpfn",
+      label: "Meu CPF (Apenas números — para cadastros e sistemas)",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text: `02089867310`
+    },
+    {
+      shortcut: "/email",
+      label: "Meu E-mail Principal (robertoarcanjo87@gmail.com)",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text: `robertoarcanjo87@gmail.com`
+    },
+    {
+      shortcut: "/emailg",
+      label: "Meu E-mail Geriatria (robertogeriatria@gmail.com)",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text: `robertogeriatria@gmail.com`
+    },
+    {
+      shortcut: "/pix",
+      label: "Meus Dados de PIX (CPF ou E-mail)",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text:
+`Dados para PIX / Transferência:
+• Favorecido: Roberto Willamy Arcanjo Rego Filho
+• Chave PIX: {formmenu: name=Chave PIX; default=020.898.673-10 (CPF); 02089867310 (CPF somente números); robertoarcanjo87@gmail.com (E-mail); robertogeriatria@gmail.com (E-mail Geriatria)}`
+    },
+    {
+      shortcut: "/meusdados",
+      label: "Ficha Completa de Dados Pessoais e Profissionais (Para Cadastros)",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text:
+`Nome completo: Roberto Willamy Arcanjo Rego Filho
+CPF: 020.898.673-10 (02089867310)
+E-mail principal: robertoarcanjo87@gmail.com
+E-mail profissional: robertogeriatria@gmail.com
+Especialidades: Clínica Médica · Gastroenterologia · Geriatria`
+    },
+    {
+      shortcut: "/cadastro",
+      label: "Preencher Formulário Automaticamente (Nome + Tab + E-mail + Tab + CPF)",
+      folder: "00. Pessoal — Dr. Roberto Arcanjo",
+      text: `Roberto Willamy Arcanjo Rego Filho{key: tab}robertoarcanjo87@gmail.com{key: tab}02089867310`
+    },
+
+    // =========================================================================
     // 01. CLÍNICA MÉDICA & ALTO FLUXO
     // =========================================================================
     {
@@ -523,7 +589,8 @@ Data: {time: DD/MM/YYYY}
       folder: "04. Prescrições, Atestados & Documentos",
       text:
 `__________________________________________
-Médico(a) — Clínica Médica · Gastroenterologia · Geriatria
+Dr. Roberto Willamy Arcanjo Rego Filho
+Clínica Médica · Gastroenterologia · Geriatria
 CRM: _______________ | RQE: _______________`
     },
 

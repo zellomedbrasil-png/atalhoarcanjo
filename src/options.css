@@ -1350,8 +1350,41 @@ code {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsivo */
-@media (max-width: 1040px) {
+/* Botão recolhível do painel do paciente (usado no mobile) */
+.pt-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.pt-toggle-btn .ic {
+  color: var(--primary);
+}
+.pt-toggle-btn h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+.pt-summary-badge {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.mobile-only {
+  display: none;
+}
+
+/* Responsivo Desktop Intermediário / Tablet */
+@media (max-width: 1080px) {
   .consult-grid, .editor-grid, .config-grid, .sig-grid {
     grid-template-columns: 1fr;
   }
@@ -1362,29 +1395,274 @@ code {
     grid-template-columns: 1fr;
   }
 }
-@media (max-width: 760px) {
+
+/* ================= OTIMIZAÇÃO MOBILE COMPLETA (iOS / Android) ================= */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+  }
+
   .app {
     grid-template-columns: 1fr;
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
   }
+
+  /* Barra de navegação inferior fixa estilo App Nativo */
   .sidebar {
-    position: static;
-    height: auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
     flex-direction: row;
-    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    gap: 2px;
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-top: 1px solid var(--line-strong);
+    background: var(--surface);
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08);
+    z-index: 50;
   }
   .brand, .nav-foot {
     display: none;
   }
+  .nav-item {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 2px;
+    font-size: 11px;
+    text-align: center;
+    border-radius: 8px;
+    min-height: 48px;
+  }
+  .nav-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 72px;
+  }
+  .nav-item .ic {
+    width: 19px;
+    height: 19px;
+  }
+
+  /* Barra Superior Compacta Mobile */
+  .topbar {
+    height: 52px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .topbar h1 {
+    font-size: 15.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .search-trigger {
     min-width: 0;
+    padding: 6px 10px;
+    font-size: 12.5px;
+  }
+  .search-trigger kbd {
+    display: none;
+  }
+  .status-pill {
+    font-size: 11px;
+    padding: 3px 8px;
+    max-width: 115px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Views e Espaçamentos Mobile */
+  .view {
+    padding: 12px 12px 24px;
+  }
+  .tip {
+    font-size: 12px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+  }
+
+  /* Evita zoom automático do Safari/iOS ao tocar em campos (font-size >= 16px) */
+  input:not([type="checkbox"]), select, textarea {
+    font-size: 16px;
+    padding: 9px 11px;
+  }
+  .btn {
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+  .btn-sm {
+    min-height: 36px;
+    padding: 6px 10px;
+  }
+
+  /* Painel do Paciente Recolhível no Mobile */
+  .mobile-only {
+    display: inline-block;
+  }
+  .patient.collapsed .pt-body {
+    display: none;
+  }
+  .patient.collapsed .card-head {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .patient:not(.collapsed) #ptToggleMobile .ic.chev {
+    transform: rotate(180deg);
+  }
+
+  /* Calculadoras em grade 2x2 compacta no celular */
+  .calcs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .calcs-title {
+    grid-column: 1 / -1;
+  }
+  .calc {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px;
+    gap: 2px;
+  }
+
+  /* Documento da Consulta Mobile */
+  .doc {
+    padding: 14px;
+  }
+  .doc-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .doc-actions {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1fr auto;
+    gap: 6px;
+    width: 100%;
+  }
+  .doc-actions .btn {
+    width: 100%;
+    padding: 8px 6px;
+    font-size: 12.5px;
+  }
+
+  /* Favoritos com rolagem horizontal suave ou chips compactos */
+  .quick-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  .quick-list {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .q-chip {
+    flex-shrink: 0;
+    padding: 6px 11px;
+    font-size: 12.5px;
+  }
+
+  #tryBox {
+    min-height: 240px;
+    font-size: 15px;
+    padding: 10px 12px;
+  }
+  .doc-foot .keys {
+    display: none;
+  }
+
+  /* Biblioteca Mobile: Filtros deslizáveis e Cartões em 1 Coluna */
+  .lib {
+    padding: 0;
+  }
+  .lib-toolbar {
+    padding: 12px;
+    gap: 8px;
+  }
+  .search-field {
+    min-width: 100%;
+    order: 1;
+  }
+  #libCount {
+    order: 2;
+    margin-right: auto;
+  }
+  #add {
+    order: 3;
+  }
+  .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+    scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex-shrink: 0;
+    padding: 7px 13px;
+  }
+  .folder-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
   .snip-row {
-    grid-template-columns: 28px 100px 1fr;
+    padding: 13px 14px;
   }
-  .snip-meta {
+
+  /* Editor Mobile */
+  .editor-head {
+    gap: 6px;
+  }
+  .crumb {
     display: none;
+  }
+  .menu-pop {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    min-width: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  #text, .rich {
+    min-height: 230px;
+  }
+
+  /* Configurações Mobile */
+  .two {
+    grid-template-columns: 1fr;
+  }
+
+  /* Paleta Ctrl+K e Toasts no Mobile */
+  .cmdk {
+    width: calc(100vw - 20px);
+    max-height: 82dvh;
+  }
+  .toasts {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    right: 12px;
+  }
+  .toast {
+    text-align: center;
   }
 }
 @media (prefers-reduced-motion: reduce) {
