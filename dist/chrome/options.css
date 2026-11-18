@@ -1467,6 +1467,13 @@ code {
     min-width: 0;
     padding: 6px 10px;
     font-size: 12.5px;
+    white-space: nowrap;
+  }
+  .search-trigger span {
+    max-width: 70px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .search-trigger kbd {
     display: none;
@@ -1493,6 +1500,9 @@ code {
   input:not([type="checkbox"]), select, textarea {
     font-size: 16px;
     padding: 9px 11px;
+  }
+  .search-field input {
+    padding-left: 36px;
   }
   .btn {
     min-height: 40px;
@@ -1624,6 +1634,16 @@ code {
   }
   .snip-row {
     padding: 13px 14px;
+  }
+  .snip-card-foot {
+    flex-wrap: wrap;
+  }
+  .snip-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .snip-actions .btn {
+    flex: 1;
   }
 
   /* Editor Mobile */

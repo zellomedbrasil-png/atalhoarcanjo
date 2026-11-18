@@ -654,6 +654,7 @@ function cleanExcerpt(s) {
     .replace(/\{form(?:text|paragraph|menu|date):\s*name=([^;}]+)[^}]*\}/gi, "[$1]")
     .replace(/\{formtoggle:\s*name=([^;}]+)[^}]*\}/gi, "")
     .replace(/\{(?:endformtoggle|endnote|note|else|endif|cursor|clipboard)\}/gi, "")
+    .replace(/\{key:\s*tab\}/gi, " → ")
     .replace(/\{(?:if|elseif|key|wait|site|import):[^}]*\}/gi, "")
     .replace(/\{=imc\([^}]*\)\}/gi, "[IMC]")
     .replace(/\{=classImc\([^}]*\)\}/gi, "[Classificação IMC]")
